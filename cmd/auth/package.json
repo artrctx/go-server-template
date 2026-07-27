@@ -1,0 +1,35 @@
+{
+  "name": "shuffle-auth",
+  "type": "module",
+  "scripts": {
+    "dev": "dotenv -e .env -- tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "schema:generate": "dotenv -e .env -- pnpm dlx @better-auth/cli@latest generate --config ./src/lib/auth/server.ts --output ../../migrations/000000_auth_schema.up.sql",
+    "schema:migrate": "dotenv -e .env -- pnpm dlx @better-auth/cli@latest migrate --config ./src/lib/auth/server.ts"
+  },
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.6.23",
+    "@better-auth/expo": "^1.6.20",
+    "@hono/node-server": "^2.0.6",
+    "@opentelemetry/api-logs": "^0.219.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.219.0",
+    "@opentelemetry/resources": "^2.8.0",
+    "@opentelemetry/sdk-logs": "^0.219.0",
+    "@opentelemetry/sdk-node": "^0.219.0",
+    "@t3-oss/env-core": "^0.13.11",
+    "better-auth": "^1.6.20",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.27",
+    "pg": "^8.22.0",
+    "resend": "^6.16.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/pg": "^8.20.0",
+    "dotenv-cli": "^11.0.0",
+    "tsx": "^4.22.4",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,20 @@
+FROM golang:1.26-alpine AS builder
+ARG CGO_ENABLED=0
+WORKDIR /app
+
+# Install CA certificates in the builder stage
+RUN apk --no-cache add ca-certificates
+
+COPY go.mod go.sum ./
+# DOWNLOAD DEPENDENCIES
+RUN go mod download
+COPY . .
+
+# BUILD APP
+RUN go build -o main cmd/api/main.go
+
+FROM scratch
+# Copy the SSL certificates from the builder stage
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /app/main /main
+ENTRYPOINT ["/main"]

@@ -1,0 +1,36 @@
+name: "shuffle-core"
+services:
+  auth:
+    env_file: cmd/auth/.env
+    environment:
+      - PORT=3000
+      - API_URL=http://core:8080
+    build:
+      context: .
+      dockerfile: Dockerfile.auth
+    ports:
+      - 3000:3000
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    networks:
+      - shuffle-net
+
+  api:
+    env_file: .env
+    environment:
+      - PORT=8080
+      - JWKS_URL=http://auth:3000/api/auth/jwks
+      - AUTH_URL=http://auth:3000
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - 8080:8080
+    networks:
+      - shuffle-net
+
+networks:
+  shuffle-net:
