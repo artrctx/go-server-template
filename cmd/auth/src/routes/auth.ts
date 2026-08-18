@@ -3,10 +3,10 @@ import { auth, type AuthType } from "../lib/auth/server.js";
 import { cors } from "hono/cors";
 import { APP_SCHEMA } from "../lib/auth/const.js";
 import { env } from "../env.js";
-import { db, user } from "../lib/auth/adapter.js";
+import { db } from "../lib/auth/adapter.js";
 import { eq, or } from "drizzle-orm";
 import { tryCatch } from "../lib/util/trycatch.js";
-import { HTTPException } from "hono/http-exception";
+import { user } from "../lib/auth/schema.js";
 
 const router = new Hono<{ Bindings: AuthType }>({ strict: false });
 

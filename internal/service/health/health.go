@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/artrctx/shuffle-core/internal/database"
-	"github.com/artrctx/shuffle-core/internal/env"
-	"github.com/artrctx/shuffle-core/internal/lib/json"
+	"github.com/artrctx/templ-core/internal/database"
+	"github.com/artrctx/templ-core/internal/env"
+	"github.com/artrctx/templ-core/internal/lib/json"
 )
 
 type Health struct {
@@ -43,7 +43,7 @@ func HealthHandlerFunc(s *database.Service) http.HandlerFunc {
 
 		response := map[string]interface{}{
 			"status":  status,
-			"service": "shuffle-server",
+			"service": "templ-server",
 			"auth":    authServerHealthStatus(),
 			"db":      dbStatus,
 		}

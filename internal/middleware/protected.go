@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/artrctx/shuffle-core/internal/auth"
-	"github.com/artrctx/shuffle-core/internal/lib/logger"
-	"github.com/artrctx/shuffle-core/internal/lib/res"
+	"github.com/artrctx/templ-core/internal/auth"
+	"github.com/artrctx/templ-core/internal/lib/logger"
+	"github.com/artrctx/templ-core/internal/lib/res"
 )
 
 func Protected(next http.Handler) http.Handler {

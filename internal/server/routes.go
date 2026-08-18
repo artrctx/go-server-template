@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/artrctx/shuffle-core/internal/env"
-	"github.com/artrctx/shuffle-core/internal/lib/res"
-	"github.com/artrctx/shuffle-core/internal/middleware"
-	"github.com/artrctx/shuffle-core/internal/service/asset"
-	"github.com/artrctx/shuffle-core/internal/service/auth"
-	"github.com/artrctx/shuffle-core/internal/service/deck"
-	"github.com/artrctx/shuffle-core/internal/service/health"
+	"github.com/artrctx/templ-core/internal/env"
+	"github.com/artrctx/templ-core/internal/lib/res"
+	"github.com/artrctx/templ-core/internal/middleware"
+	"github.com/artrctx/templ-core/internal/service/asset"
+	"github.com/artrctx/templ-core/internal/service/auth"
+	"github.com/artrctx/templ-core/internal/service/deck"
+	"github.com/artrctx/templ-core/internal/service/health"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -25,9 +25,9 @@ func (s *Server) Register() http.Handler {
 
 	var origins []string
 	if env.AppEnv == "production" {
-		origins = []string{`shuffle:\/\/*`}
+		origins = []string{`templ:\/\/*`}
 	} else {
-		origins = []string{`shuffle:\/\/*`, `exp:\/\/*`, `https:\/\/*`, `http:\/\/*`}
+		origins = []string{`templ:\/\/*`, `exp:\/\/*`, `https:\/\/*`, `http:\/\/*`}
 	}
 
 	r.Use(cors.Handler(cors.Options{

@@ -1,4 +1,4 @@
-name: "shuffle-db"
+name: "templ-db"
 
 services:
   postgres:

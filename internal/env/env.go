@@ -11,7 +11,6 @@ import (
 
 var (
 	Port              int
-	JwksUrl           string
 	AuthUrl           string
 	DatabaseUrl       string
 	PostHogToken      string
@@ -43,11 +42,6 @@ func init() {
 	DatabaseUrl = os.Getenv("DATABASE_URL")
 	if DatabaseUrl == "" {
 		log.Fatalln("Missing 'DATABASE_URL' env")
-	}
-
-	JwksUrl = os.Getenv("JWKS_URL")
-	if JwksUrl == "" {
-		log.Fatalln("Missing 'JWKS_URL' env")
 	}
 
 	AuthUrl = os.Getenv("AUTH_URL")
@@ -85,6 +79,6 @@ func init() {
 		log.Fatalln("Missing 'APP_ENV' env")
 	}
 
-	AppName = fmt.Sprintf("shuffle-%s", AppEnv)
+	AppName = fmt.Sprintf("templ-%s", AppEnv)
 
 }

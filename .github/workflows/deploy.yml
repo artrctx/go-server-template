@@ -12,9 +12,8 @@ on:
           - staging
           - production
 jobs:
-
-  build-api:
-    environment: ${{ github.event.inputs.environment }}
+  build-core:
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,10 +43,10 @@ jobs:
           file: Dockerfile.api
           push: true
           tags: |
-            ${{ vars.DOCKER_USERNAME }}/shuffle-api:${{ github.sha }}
-            ${{ vars.DOCKER_USERNAME }}/shuffle-api:latest
+            ${{ vars.DOCKER_USERNAME }}/templ:${{ github.sha }}
+            ${{ vars.DOCKER_USERNAME }}/templ:latest
   build-auth:
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -81,75 +80,61 @@ jobs:
           file: Dockerfile.auth
           push: true
           tags: |
-            ${{ vars.DOCKER_USERNAME }}/shuffle-auth:${{ github.sha }}
-            ${{ vars.DOCKER_USERNAME }}/shuffle-auth:latest
+            ${{ vars.DOCKER_USERNAME }}/templ-auth:${{ github.sha }}
+            ${{ vars.DOCKER_USERNAME }}/templ-auth:latest
 
   deploy:
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ inputs.environment }}
+    permissions:
+      id-token: write
+      contents: read
     needs:
-      - build-api
+      - build-core
       - build-auth
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:ci
+          ping: ${{ vars.TS_VPS_HOST }}
 
-      - name: Copy compose file
+      - name: Copy docker file via scp
         run: |
-          sshpass -p "${{ secrets.DROPLET_PASSWORD }}" \
-            scp -o StrictHostKeyChecking=no \
-            docker-compose.yml \
-            root@${{ vars.DROPLET_IP }}:~/
+          scp -o StrictHostKeyChecking=no docker-compose.yml root@${{ vars.TS_VPS_HOST }}:~
 
       - name: Deploy
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ vars.DROPLET_IP }}
-          username: root
-          password: ${{ secrets.DROPLET_PASSWORD }}
-          script: |
-            docker login \
-              -u "${{ vars.DOCKER_USERNAME }}" \
-              -p "${{ secrets.DOCKER_TOKEN }}"
+        run: |
+          ssh root@${{ vars.TS_VPS_HOST }} "
+            set -e
+            echo '${{ secrets.DOCKER_TOKEN }}' | docker login -u '${{ vars.DOCKER_USERNAME }}' --password-stdin
             cd ~
-            touch .env
-            > .env
-            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
-            echo "BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}" >> .env
-            echo "BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}" >> .env
-            echo "GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}" >> .env 
-            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
-            echo "POSTHOG_TOKEN=${{ secrets.POSTHOG_TOKEN }}" >> .env
-            echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> .env
-            echo "R2_ACCOUNT_ID=${{ vars.R2_ACCOUNT_ID }}" >> .env
-            echo "R2_BUCKET_NAME=${{ vars.R2_BUCKET_NAME }}" >> .env
-            echo "R2_ACCESS_KEY=${{ secrets.R2_ACCESS_KEY }}" >> .env
-            echo "R2_ACCESS_SECRET_KEY=${{ secrets.R2_ACCESS_SECRET_KEY }}" >> .env
-            echo "APP_EMAIL=${{ vars.APP_EMAIL }}" >> .env
-            echo "APP_ENV=${{ vars.APP_ENV }}" >> .env
+            cat << 'ENV' > .env
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
+          BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}
+          GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          POSTHOG_TOKEN=${{ vars.POSTHOG_TOKEN }}
+          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+          APP_EMAIL=${{ vars.APP_EMAIL }}
+          APP_ENV=${{ vars.APP_ENV }}
+          ENV
             docker compose pull
             docker compose up -d --remove-orphans
+            docker logout
+          "
 
   migration:
-    environment: ${{ github.event.inputs.environment }}
     needs:
       - deploy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install go-migrate
-        run: |
-          sudo mkdir -p /etc/apt/keyrings
-          curl -fsSL https://packagecloud.io/golang-migrate/migrate/gpgkey | sudo gpg --dearmor -o /etc/apt/keyrings/migrate.gpg
-          echo "deb [signed-by=/etc/apt/keyrings/migrate.gpg] https://packagecloud.io/golang-migrate/migrate/ubuntu/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/migrate.list
-          sudo apt-get update
-          sudo apt-get install -y migrate
-      
-      - name: Migrate
-        run: migrate -database '${{ secrets.DIRECT_DATABASE_URL }}' -path migrations up
+    uses: ./.github/workflows/migration.yml
+    with:
+      environment: ${{ inputs.environment }} 
+    secrets: inherit
 
      

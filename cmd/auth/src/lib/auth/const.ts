@@ -1,1 +1,1 @@
-export const APP_SCHEMA = "shuffle";
+export const APP_SCHEMA = "templ";

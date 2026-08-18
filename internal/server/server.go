@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/artrctx/shuffle-core/internal/database"
-	"github.com/artrctx/shuffle-core/internal/env"
-	"github.com/artrctx/shuffle-core/internal/storage"
+	"github.com/artrctx/templ-core/internal/database"
+	"github.com/artrctx/templ-core/internal/env"
+	"github.com/artrctx/templ-core/internal/storage"
 )
 
 type Server struct {

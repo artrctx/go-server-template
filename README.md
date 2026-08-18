@@ -1,4 +1,4 @@
-# shuffle core
+# templ core
 
 ```bash
 # sqlc dep
@@ -9,7 +9,7 @@ go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@lat
 
 ---
 
-![shuffle](./public/shuffle.gif)
+![templ](./public/templ.gif)
 
 ---
 
@@ -40,3 +40,6 @@ R2_BUCKET_NAME
 todo:
 need to log actual response body
 make sure golang logger works.
+
+In addition to env above
+you will need docker and tailscale credential in github env

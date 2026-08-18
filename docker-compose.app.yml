@@ -1,4 +1,4 @@
-name: "shuffle-core"
+name: "templ-core"
 services:
   auth:
     env_file: cmd/auth/.env
@@ -15,14 +15,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
+      start_period: 15s
     networks:
-      - shuffle-net
+      - templ-net
 
   api:
     env_file: .env
     environment:
       - PORT=8080
-      - JWKS_URL=http://auth:3000/api/auth/jwks
       - AUTH_URL=http://auth:3000
     build:
       context: .
@@ -30,7 +30,7 @@ services:
     ports:
       - 8080:8080
     networks:
-      - shuffle-net
+      - templ-net
 
 networks:
-  shuffle-net:
+  templ-net:

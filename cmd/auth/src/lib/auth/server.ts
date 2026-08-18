@@ -4,6 +4,7 @@ import {
   jwt,
   username,
   emailOTP,
+  anonymous,
 } from "better-auth/plugins";
 import { ac, admin, moderator, user } from "./permissions.js";
 import { APP_SCHEMA } from "./const.js";
@@ -69,6 +70,7 @@ export const auth = betterAuth({
     jwt(),
     username(),
     expo(),
+    anonymous(),
     adminConfig({
       ac,
       roles: {
@@ -84,7 +86,7 @@ export const auth = betterAuth({
       disableSignUp: true,
       async sendVerificationOTP({ email, otp, type }) {
         const { data, error } = await resend.emails.send({
-          from: `Shuffle <${env.APP_EMAIL}>`,
+          from: `templ <${env.APP_EMAIL}>`,
           to: email,
           ...AUTH_EMAIL_CONTENT[type](otp),
         });

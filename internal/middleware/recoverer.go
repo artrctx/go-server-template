@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/artrctx/shuffle-core/internal/lib/logger"
-	"github.com/artrctx/shuffle-core/internal/lib/res"
+	"github.com/artrctx/templ-core/internal/lib/logger"
+	"github.com/artrctx/templ-core/internal/lib/res"
 )
 
 func Recoverer(next http.Handler) http.Handler {

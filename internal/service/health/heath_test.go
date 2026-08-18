@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/artrctx/shuffle-core/internal/database"
-	"github.com/artrctx/shuffle-core/tests/dbtest"
+	"github.com/artrctx/templ-core/internal/database"
+	"github.com/artrctx/templ-core/tests/dbtest"
 )
 
 var testDBConnStr string

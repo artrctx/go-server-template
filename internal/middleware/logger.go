@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/artrctx/shuffle-core/internal/lib/logger"
+	"github.com/artrctx/templ-core/internal/lib/logger"
 	md "github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 )

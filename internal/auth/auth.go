@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/artrctx/shuffle-core/internal/env"
+	"github.com/artrctx/templ-core/internal/env"
 	"github.com/lestrrat-go/httprc/v3"
 	"github.com/lestrrat-go/httprc/v3/tracesink"
 	"github.com/lestrrat-go/jwx/v3/jwk"
@@ -19,7 +19,9 @@ import (
 
 type UserKey string
 
-const UserCtxKey UserKey = "shuffle-user"
+const UserCtxKey UserKey = "templ-user"
+
+var jwksURL string = fmt.Sprintf("%s/api/auth/jwks", env.AuthUrl)
 
 type User struct {
 	ID    string `json:"id"`
@@ -53,11 +55,11 @@ func loadCachedKeyset() error {
 		return err
 	}
 
-	if err := c.Register(ctx, env.JwksUrl); err != nil {
+	if err := c.Register(ctx, jwksURL); err != nil {
 		return err
 	}
 
-	if _, err := c.Refresh(ctx, env.JwksUrl); err != nil {
+	if _, err := c.Refresh(ctx, jwksURL); err != nil {
 		return err
 	}
 
@@ -75,7 +77,7 @@ func UserFromRequest(r *http.Request) (User, error) {
 
 	timedCtx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
-	keyset, err := JwkCache.Lookup(timedCtx, env.JwksUrl)
+	keyset, err := JwkCache.Lookup(timedCtx, jwksURL)
 	if err != nil {
 		return User{}, fmt.Errorf("retrieve jwks: %w", err)
 	}
@@ -84,8 +86,8 @@ func UserFromRequest(r *http.Request) (User, error) {
 	token, err := jwt.ParseRequest(r,
 		jwt.WithKeySet(keyset),
 		jwt.WithHeaderKey("Authorization"),
-		// jwt.WithCookieKey("shuffle.session_token"),
-		// jwt.WithCookieKey("__Secure-shuffle.session_token"),
+		// jwt.WithCookieKey("templ.session_token"),
+		// jwt.WithCookieKey("__Secure-templ.session_token"),
 	)
 
 	if err != nil {

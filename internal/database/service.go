@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/artrctx/shuffle-core/internal/database/repository/deck"
-	"github.com/artrctx/shuffle-core/internal/env"
+	"github.com/artrctx/templ-core/internal/database/repository/deck"
+	"github.com/artrctx/templ-core/internal/env"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"

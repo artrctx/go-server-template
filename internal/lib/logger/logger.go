@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/artrctx/shuffle-core/internal/env"
+	"github.com/artrctx/templ-core/internal/env"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"

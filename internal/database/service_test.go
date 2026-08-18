@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/artrctx/shuffle-core/tests/dbtest"
+	"github.com/artrctx/templ-core/tests/dbtest"
 )
 
 var dbConnStr string

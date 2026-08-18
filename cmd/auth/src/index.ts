@@ -24,7 +24,11 @@ app.get("/health", async (c) => {
   );
   if (res.error) {
     c.status(500);
-    return c.json({ status: "down", cause: res.error });
+    return c.json({
+      status: "down",
+      message: res.error.message,
+      cause: res.error.cause,
+    });
   }
   return c.json({ status: res.value.ok ? "up" : "down" });
 });

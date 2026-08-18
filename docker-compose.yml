@@ -1,8 +1,8 @@
-name: "shuffle"
+name: "templ"
 services:
   auth:
     container_name: auth 
-    image: artrctx/shuffle-auth:latest
+    image: artrctx/templ-auth:latest
     env_file: .env
     environment:
       - PORT=3000
@@ -16,15 +16,14 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      - shuffle-net
+      - templ-net
 
   api:
     container_name: core
-    image: artrctx/shuffle-api:latest
+    image: artrctx/templ:latest
     env_file: .env
     environment:
       - PORT=8080
-      - JWKS_URL=http://auth:3000/api/auth/jwks
       - AUTH_URL=http://auth:3000
     ports:
       - 8080:8080
@@ -39,7 +38,7 @@ services:
       auth:
         condition: service_healthy
     networks:
-      - shuffle-net
+      - templ-net
 
 networks:
-  shuffle-net:
+  templ-net:

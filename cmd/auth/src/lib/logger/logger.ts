@@ -9,7 +9,7 @@ import { resourceFromAttributes } from "@opentelemetry/resources";
 import { env } from "../../env.js";
 import { logs } from "@opentelemetry/api-logs";
 
-const ServiceName = "shuffle-auth";
+const ServiceName = "templ-auth";
 export const loggerSdk = new NodeSDK({
   resource: resourceFromAttributes({
     "service.name": ServiceName,
@@ -17,15 +17,17 @@ export const loggerSdk = new NodeSDK({
 
   logRecordProcessor:
     env.APP_ENV !== "development"
-      ? new BatchLogRecordProcessor(
-          new OTLPLogExporter({
+      ? new BatchLogRecordProcessor({
+          exporter: new OTLPLogExporter({
             url: "https://us.i.posthog.com/i/v1/logs",
             headers: {
               Authorization: `Bearer ${env.POSTHOG_TOKEN}`,
             },
           }),
-        )
-      : new SimpleLogRecordProcessor(new ConsoleLogRecordExporter()),
+        })
+      : new SimpleLogRecordProcessor({
+          exporter: new ConsoleLogRecordExporter(),
+        }),
 });
 
 export const logger = logs.getLogger(`${ServiceName}-logger`);

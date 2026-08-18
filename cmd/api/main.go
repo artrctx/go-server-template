@@ -12,10 +12,10 @@ import (
 	"time"
 
 	// Register env
-	"github.com/artrctx/shuffle-core/internal/auth"
-	_ "github.com/artrctx/shuffle-core/internal/env"
-	"github.com/artrctx/shuffle-core/internal/lib/logger"
-	"github.com/artrctx/shuffle-core/internal/server"
+	"github.com/artrctx/templ-core/internal/auth"
+	_ "github.com/artrctx/templ-core/internal/env"
+	"github.com/artrctx/templ-core/internal/lib/logger"
+	"github.com/artrctx/templ-core/internal/server"
 )
 
 func gracefulShutdown(srv *http.Server, done chan bool) {
@@ -68,7 +68,7 @@ func main() {
 	// Handle graceful shutdown in a seperate goroutine
 	go gracefulShutdown(srv, done)
 
-	slog.Info(fmt.Sprintf("shuffle server starting at %s", srv.Addr))
+	slog.Info(fmt.Sprintf("templ server starting at %s", srv.Addr))
 
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(fmt.Sprintf("http server error: %s", err))

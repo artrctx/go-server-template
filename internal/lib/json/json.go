@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/artrctx/shuffle-core/internal/lib/logger"
-	"github.com/artrctx/shuffle-core/internal/lib/res"
+	"github.com/artrctx/templ-core/internal/lib/logger"
+	"github.com/artrctx/templ-core/internal/lib/res"
 )
 
 func Encode(w http.ResponseWriter, r *http.Request, statusCode int, v any) {

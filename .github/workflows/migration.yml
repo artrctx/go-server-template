@@ -1,0 +1,62 @@
+name: Migrate DB 
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select the target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+jobs:
+  migrate-core:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install go-migrate
+        run: |
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://packagecloud.io/golang-migrate/migrate/gpgkey | sudo gpg --dearmor -o /etc/apt/keyrings/migrate.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/migrate.gpg] https://packagecloud.io/golang-migrate/migrate/ubuntu/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/migrate.list
+          sudo apt-get update
+          sudo apt-get install -y migrate
+      
+      - name: Migrate
+        run: migrate -database '${{ secrets.DIRECT_DATABASE_URL }}' -path migrations up
+
+  migrate-auth:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: cmd/auth/pnpm-lock.yaml
+      
+      - name: Migrate
+        run: |
+          export DATABASE_URL='${{ secrets.DIRECT_DATABASE_URL }}'
+          cd cmd/auth
+          pnpm install --frozen-lockfile
+          pnpm migrate
+      
+
+
+     
