@@ -43,3 +43,6 @@ make sure golang logger works.
 
 In addition to env above
 you will need docker and tailscale credential in github env
+
+<img width="1336" height="262" alt="Screenshot_20260817_212922-1" src="https://github.com/user-attachments/assets/1d5d31bb-898e-4220-8e3a-9cb54dce0852" />
+
