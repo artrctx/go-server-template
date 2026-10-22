@@ -3,14 +3,13 @@ package deck
 import (
 	"context"
 	"net/http"
+	"uuid"
 
-	"github.com/artrctx/templ-core/internal/auth"
-	"github.com/artrctx/templ-core/internal/database/repository/deck"
-	"github.com/artrctx/templ-core/internal/lib/inst"
-	"github.com/artrctx/templ-core/internal/lib/json"
-	"github.com/artrctx/templ-core/internal/lib/res"
+	"github.com/artrctx/templ/internal/auth"
+	"github.com/artrctx/templ/internal/database/repository/deck"
+	"github.com/artrctx/templ/internal/lib/httpu"
+	"github.com/artrctx/templ/internal/lib/inst"
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -31,18 +30,18 @@ type ListResponse struct {
 func (d *Deck) ListPermitted(w http.ResponseWriter, r *http.Request) {
 	usr, err := auth.UserFromCtx(r.Context())
 	if err != nil {
-		res.Unauthorized(w)
+		httpu.Unauthorized(w)
 		return
 	}
 
 	var query ListPermittedRequestQuery
 	if err := inst.SchemaDecoder.Decode(&query, r.URL.Query()); err != nil {
-		res.BadRequest(w, err)
+		httpu.BadRequest(w, err)
 		return
 	}
 
 	if err := inst.Validate.Struct(query); err != nil {
-		res.BadRequest(w, err)
+		httpu.BadRequest(w, err)
 		return
 	}
 
@@ -50,11 +49,11 @@ func (d *Deck) ListPermitted(w http.ResponseWriter, r *http.Request) {
 	var decks []deck.Deck
 	var count int64
 	eg.Go(func() (err error) {
-		decks, err = d.db.Deck.ListPermitted(ctx, deck.ListPermittedParams{UserID: usr.ID, Limit: query.Limit, Offset: query.Offset, Name: query.Name, Description: query.Description, Archived: query.Archived, Visibility: query.Visibility})
+		decks, err = d.deck.ListPermitted(ctx, deck.ListPermittedParams{UserID: usr.ID, Limit: query.Limit, Offset: query.Offset, Name: query.Name, Description: query.Description, Archived: query.Archived, Visibility: query.Visibility})
 		return
 	})
 	eg.Go(func() (err error) {
-		count, err = d.db.Deck.PermittedCount(ctx, deck.PermittedCountParams{
+		count, err = d.deck.PermittedCount(ctx, deck.PermittedCountParams{
 			UserID:      usr.ID,
 			Name:        query.Name,
 			Description: query.Description, Archived: query.Archived, Visibility: query.Visibility,
@@ -63,11 +62,11 @@ func (d *Deck) ListPermitted(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err := eg.Wait(); err != nil {
-		res.InternalServerError(w, err)
+		httpu.InternalServerError(w, err)
 		return
 	}
 
-	json.Encode(w, r, http.StatusOK, ListResponse{decks, uint(count)})
+	httpu.JsonEncode(w, r, http.StatusOK, ListResponse{decks, uint(count)})
 }
 
 type CreateRequest struct {
@@ -81,25 +80,26 @@ func (d *Deck) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	usr, err := auth.UserFromCtx(ctx)
 	if err != nil {
-		res.Unauthorized(w)
+		httpu.Unauthorized(w)
 		return
 	}
 
-	tx, query, err := d.db.DeckTx(ctx)
+	tx, err := d.db.Begin(ctx)
 	if err != nil {
-		res.InternalServerError(w, err)
+		httpu.InternalServerError(w, err)
 		return
 	}
+	query := deck.New(tx)
 	defer tx.Rollback(context.WithoutCancel(ctx))
 
 	var req CreateRequest
-	if err := json.Decode(r.Body, &req); err != nil {
-		res.BadRequest(w, err)
+	if err := httpu.JsonDecode(r.Body, &req); err != nil {
+		httpu.BadRequest(w, err)
 		return
 	}
 
 	if err := inst.Validate.Struct(req); err != nil {
-		res.BadRequest(w, err)
+		httpu.BadRequest(w, err)
 		return
 	}
 
@@ -114,45 +114,45 @@ func (d *Deck) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		// if future implementation have conflict update this
-		res.InternalServerError(w, err)
+		httpu.InternalServerError(w, err)
 		return
 	}
 
 	if err := query.LinkUser(ctx, deck.LinkUserParams{DeckID: new.ID, UserID: usr.ID}); err != nil {
 		// if user can be linked in the future update tihs
-		res.InternalServerError(w, err)
+		httpu.InternalServerError(w, err)
 		return
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		res.InternalServerError(w, err)
+		httpu.InternalServerError(w, err)
 		return
 	}
 
-	json.Encode(w, r, http.StatusOK, new)
+	httpu.JsonEncode(w, r, http.StatusOK, new)
 }
 
 func (d *Deck) Find(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	usr, err := auth.UserFromCtx(ctx)
 	if err != nil {
-		res.Unauthorized(w)
+		httpu.Unauthorized(w)
 		return
 	}
 
 	deckID, err := uuid.Parse(chi.URLParam(r, "deckID"))
 	if err != nil {
-		res.BadRequest(w, err)
+		httpu.BadRequest(w, err)
 		return
 	}
 
-	deck, err := d.db.Deck.FindPermitted(ctx, deck.FindPermittedParams{ID: deckID, UserID: usr.ID})
+	deck, err := d.deck.FindPermitted(ctx, deck.FindPermittedParams{ID: deckID, UserID: usr.ID})
 	if err != nil {
-		res.InternalServerError(w, err)
+		httpu.InternalServerError(w, err)
 		return
 	}
 
-	json.Encode(w, r, http.StatusOK, deck)
+	httpu.JsonEncode(w, r, http.StatusOK, deck)
 }
 
 type UpdateRequest struct {
@@ -166,24 +166,24 @@ func (d *Deck) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	usr, err := auth.UserFromCtx(ctx)
 	if err != nil {
-		res.Unauthorized(w)
+		httpu.Unauthorized(w)
 		return
 	}
 
 	deckID, err := uuid.Parse(chi.URLParam(r, "deckID"))
 	if err != nil {
-		res.BadRequest(w, err)
+		httpu.BadRequest(w, err)
 		return
 	}
 
 	var body UpdateRequest
-	if err := json.Decode(r.Body, &body); err != nil {
-		res.BadRequest(w, err)
+	if err := httpu.JsonDecode(r.Body, &body); err != nil {
+		httpu.BadRequest(w, err)
 		return
 	}
 
 	if err := inst.Validate.Struct(body); err != nil {
-		res.BadRequest(w, err)
+		httpu.BadRequest(w, err)
 		return
 	}
 
@@ -196,7 +196,7 @@ func (d *Deck) Update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	updated, err := d.db.Deck.Update(ctx, deck.UpdateParams{
+	updated, err := d.deck.Update(ctx, deck.UpdateParams{
 		ID:          deckID,
 		UserID:      usr.ID,
 		Name:        body.Name,
@@ -206,9 +206,9 @@ func (d *Deck) Update(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		res.InternalServerError(w, err)
+		httpu.InternalServerError(w, err)
 		return
 	}
 
-	json.Encode(w, r, http.StatusOK, updated)
+	httpu.JsonEncode(w, r, http.StatusOK, updated)
 }

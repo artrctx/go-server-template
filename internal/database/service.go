@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/artrctx/templ-core/internal/database/repository/deck"
-	"github.com/artrctx/templ-core/internal/env"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -15,10 +13,7 @@ import (
 
 type Service struct {
 	pool *pgxpool.Pool
-	Deck *deck.Queries
 }
-
-var dbInst *Service
 
 func New(connStr string) (*Service, error) {
 	pool, err := pgxpool.New(context.Background(), connStr)
@@ -27,37 +22,21 @@ func New(connStr string) (*Service, error) {
 		return nil, err
 	}
 
-	//? Commenting out to be lazy
-	// if err := dbConn.Ping(); err != nil {
-	// 	return nil, err
-	// }
+	if err := pool.Ping(context.Background()); err != nil {
+		return nil, err
+	}
 
-	dbInst = &Service{
+	return &Service{
 		pool: pool,
-		Deck: deck.New(pool),
-	}
-
-	return dbInst, nil
-}
-
-func Get() (*Service, error) {
-	if dbInst != nil {
-		return dbInst, nil
-	}
-	return New(env.DatabaseUrl)
+	}, nil
 }
 
 func (s *Service) Conn() *pgxpool.Pool {
 	return s.pool
 }
 
-func (s *Service) DeckTx(ctx context.Context) (pgx.Tx, *deck.Queries, error) {
-	tx, err := s.pool.Begin(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return tx, deck.New(tx), nil
+func (s *Service) Begin(ctx context.Context) (pgx.Tx, error) {
+	return s.pool.Begin(ctx)
 }
 
 func (s *Service) Health(ctx context.Context) map[string]string {

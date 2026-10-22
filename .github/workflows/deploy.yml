@@ -113,16 +113,15 @@ jobs:
             set -e
             echo '${{ secrets.DOCKER_TOKEN }}' | docker login -u '${{ vars.DOCKER_USERNAME }}' --password-stdin
             cd ~
-            cat << 'ENV' > .env
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
-          BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}
-          GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-          POSTHOG_TOKEN=${{ vars.POSTHOG_TOKEN }}
-          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
-          APP_EMAIL=${{ vars.APP_EMAIL }}
-          APP_ENV=${{ vars.APP_ENV }}
+          export DATABASE_URL=${{ secrets.DATABASE_URL }}
+          export BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
+          export BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}
+          export GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}
+          export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          export POSTHOG_TOKEN=${{ vars.POSTHOG_TOKEN }}
+          export RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+          export APP_EMAIL=${{ vars.APP_EMAIL }}
+          export APP_ENV=${{ vars.APP_ENV }}
           ENV
             docker compose pull
             docker compose up -d --remove-orphans

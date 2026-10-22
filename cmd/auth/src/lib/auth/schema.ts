@@ -1,9 +1,9 @@
-import { pgSchema, text, boolean, timestamp, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { text, timestamp, boolean, index, pgSchema } from "drizzle-orm/pg-core";
 
-const authSchema = pgSchema("auth");
+const pgTable = pgSchema("auth").table;
 
-export const user = authSchema.table("user", {
+export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -16,14 +16,13 @@ export const user = authSchema.table("user", {
     .notNull(),
   username: text("username").unique(),
   displayUsername: text("display_username"),
-  isAnonymous: boolean("is_anonymous").default(false),
   role: text("role"),
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
 });
 
-export const session = authSchema.table(
+export const session = pgTable(
   "session",
   {
     id: text("id").primaryKey(),
@@ -43,7 +42,7 @@ export const session = authSchema.table(
   (table) => [index("session_userId_idx").on(table.userId)],
 );
 
-export const account = authSchema.table(
+export const account = pgTable(
   "account",
   {
     id: text("id").primaryKey(),
@@ -67,7 +66,7 @@ export const account = authSchema.table(
   (table) => [index("account_userId_idx").on(table.userId)],
 );
 
-export const verification = authSchema.table(
+export const verification = pgTable(
   "verification",
   {
     id: text("id").primaryKey(),
@@ -83,12 +82,14 @@ export const verification = authSchema.table(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const jwks = authSchema.table("jwks", {
+export const jwks = pgTable("jwks", {
   id: text("id").primaryKey(),
   publicKey: text("public_key").notNull(),
   privateKey: text("private_key").notNull(),
   createdAt: timestamp("created_at").notNull(),
   expiresAt: timestamp("expires_at"),
+  alg: text("alg"),
+  crv: text("crv"),
 });
 
 export const userRelations = relations(user, ({ many }) => ({

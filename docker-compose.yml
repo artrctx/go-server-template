@@ -3,10 +3,17 @@ services:
   auth:
     container_name: auth 
     image: artrctx/templ-auth:latest
-    env_file: .env
     environment:
-      - PORT=3000
-      - API_URL=http://core:8080
+      PORT: 3000
+      API_URL: http://core:8080
+      DATABASE_URL: $(DATABASE_URL:? DATABASE_URL is required)
+      APP_ENV: $(APP_ENV:? APP_ENV is required)
+      APP_EMAIL: $(APP_EMAIL:? APP_EMAIL is required)
+      BETTER_AUTH_URL: $(BETTER_AUTH_URL:? BETTER_AUTH_URL is required)
+      POSTHOG_TOKEN: $(POSTHOG_TOKEN:? POSTHOG_TOKEN is required)
+      GOOGLE_CLIENT_ID: $(GOOGLE_CLIENT_ID:? GOOGLE_CLIENT_ID is required)
+      GOOGLE_CLIENT_SECRET: $(GOOGLE_CLIENT_SECRET:? GOOGLE_CLIENT_SECRET is required)
+      RESEND_API_KEY: $(RESEND_API_KEY:? RESEND_API_KEY is required)
     ports:
       - 3000:3000
     restart: "on-failure:5"
@@ -15,16 +22,18 @@ services:
       interval: 1m
       timeout: 5s
       retries: 3
+      start_period: 10s
     networks:
       - templ-net
 
   api:
     container_name: core
     image: artrctx/templ:latest
-    env_file: .env
     environment:
-      - PORT=8080
-      - AUTH_URL=http://auth:3000
+      PORT: 8080
+      AUTH_URL: http://auth:3000
+      DATABASE_URL: $(DATABASE_URL:? DATABASE_URL is required)
+      APP_ENV: $(APP_ENV:? APP_ENV is required)
     ports:
       - 8080:8080
     restart: "on-failure:5"

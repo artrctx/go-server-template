@@ -8,7 +8,7 @@ package deck
 import (
 	"context"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 const checkReadPermission = `-- name: CheckReadPermission :one

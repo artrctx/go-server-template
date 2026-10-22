@@ -1,11 +1,15 @@
 package deck
 
-import "github.com/artrctx/templ-core/internal/database"
+import (
+	"github.com/artrctx/templ/internal/database"
+	"github.com/artrctx/templ/internal/database/repository/deck"
+)
 
 type Deck struct {
-	db *database.Service
+	db   *database.Service
+	deck *deck.Queries
 }
 
 func New(db *database.Service) Deck {
-	return Deck{db}
+	return Deck{db, deck.New(db.Conn())}
 }

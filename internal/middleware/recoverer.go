@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/artrctx/templ-core/internal/lib/logger"
-	"github.com/artrctx/templ-core/internal/lib/res"
+	"github.com/artrctx/templ/internal/lib/httpu"
+	"github.com/artrctx/templ/internal/lib/logger"
 )
 
 func Recoverer(next http.Handler) http.Handler {
@@ -24,7 +24,7 @@ func Recoverer(next http.Handler) http.Handler {
 				if r.Header.Get("Connection") == "Upgrade" {
 					return
 				}
-				res.InternalServerError(w, fmt.Errorf("Unknown Internal Server Error, %v", r))
+				httpu.InternalServerError(w, fmt.Errorf("Unknown Internal Server Error, %v", r))
 			}
 		}()
 		next.ServeHTTP(w, r)

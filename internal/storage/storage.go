@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/artrctx/templ-core/internal/env"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -35,11 +34,6 @@ func New(ctx context.Context, accountId, accessKey, accessSecretKey string) (*Se
 	})
 
 	return &Service{client, s3.NewPresignClient(client)}, nil
-}
-
-// new service with env
-func Get(ctx context.Context) (*Service, error) {
-	return New(ctx, env.R2AccountID, env.R2AccessKey, env.R2AccessSecretKey)
 }
 
 type GeneratePresignedPutOpt struct {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"log/slog"
@@ -12,10 +13,10 @@ import (
 	"time"
 
 	// Register env
-	"github.com/artrctx/templ-core/internal/auth"
-	_ "github.com/artrctx/templ-core/internal/env"
-	"github.com/artrctx/templ-core/internal/lib/logger"
-	"github.com/artrctx/templ-core/internal/server"
+	"github.com/artrctx/templ/cmd/api/env"
+	"github.com/artrctx/templ/internal/auth"
+	"github.com/artrctx/templ/internal/lib/logger"
+	"github.com/artrctx/templ/internal/server"
 )
 
 func gracefulShutdown(srv *http.Server, done chan bool) {
@@ -43,9 +44,15 @@ func gracefulShutdown(srv *http.Server, done chan bool) {
 }
 
 func main() {
-	logProv, err := logger.Initialize(context.Background())
+	logProv, err := logger.Initialize(context.Background(), logger.Config{Env: env.AppEnv, Name: env.AppName, PosthogToken: env.PostHogToken})
 	if err != nil {
 		log.Fatalln(err)
+	}
+	if err := auth.Initialize(env.AuthURL); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			slog.Error("Failed to initialize authentication conn within alotted time")
+		}
+		log.Fatal(err)
 	}
 	defer func() {
 		if err := auth.Close(); err != nil {
@@ -56,7 +63,15 @@ func main() {
 		}
 	}()
 
-	srv, err := server.NewServer()
+	srv, err := server.NewServer(context.Background(), server.Config{
+		DatabaseURL:    env.DatabaseURL,
+		Port:           env.Port,
+		Env:            env.AppEnv,
+		R2AccountID:    env.R2AccountID,
+		R2AccessKey:    env.R2AccessKey,
+		R2AccessSecret: env.R2AccessSecretKey,
+		R2Bucket:       env.R2BucketName,
+	})
 	if err != nil {
 		slog.Error("Failed Initiazing Server", "error", err)
 		os.Exit(1)

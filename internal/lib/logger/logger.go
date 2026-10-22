@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/artrctx/templ-core/internal/env"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
@@ -22,9 +21,15 @@ type LoggerProvider struct {
 	provider *otellog.LoggerProvider
 }
 
+type Config struct {
+	Env          string
+	Name         string
+	PosthogToken string
+}
+
 // if app env is development will use stdio
-func Initialize(ctx context.Context) (*LoggerProvider, error) {
-	if env.AppEnv == "development" {
+func Initialize(ctx context.Context, cfg Config) (*LoggerProvider, error) {
+	if cfg.Env == "development" {
 		return &LoggerProvider{}, nil
 	}
 
@@ -33,14 +38,14 @@ func Initialize(ctx context.Context) (*LoggerProvider, error) {
 		otlploghttp.WithEndpoint("us.i.posthog.com"),
 		otlploghttp.WithURLPath("/i/v1/logs"),
 		otlploghttp.WithHeaders(map[string]string{
-			"Authorization": fmt.Sprintf("Bearer %s", env.PostHogToken),
+			"Authorization": fmt.Sprintf("Bearer %s", cfg.PosthogToken),
 		}),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	os.Setenv("OTEL_SERVICE_NAME", env.AppName)
+	os.Setenv("OTEL_SERVICE_NAME", cfg.Name)
 
 	stdoutExporter, err := stdoutlog.New()
 	if err != nil {
@@ -55,7 +60,7 @@ func Initialize(ctx context.Context) (*LoggerProvider, error) {
 
 	// set defaults
 	global.SetLoggerProvider(loggerProvider)
-	slog.SetDefault(otelslog.NewLogger(fmt.Sprintf("%s-logger", env.AppName)))
+	slog.SetDefault(otelslog.NewLogger(fmt.Sprintf("%s-logger", cfg.Name)))
 
 	return &LoggerProvider{loggerProvider}, nil
 }

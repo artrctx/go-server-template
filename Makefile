@@ -7,7 +7,7 @@ build:
 
 # Run the application
 run:
-	@go run cmd/api/main.go
+	@go run -race cmd/api/main.go
 
 run-auth:
 	@cd ./cmd/auth && pnpm dev
@@ -73,15 +73,18 @@ watch:
 # Remove unused dep
 tidy:
 	@go mod tidy
-db-up:
-	docker compose -f docker-compose.db.yml up -d
-db-down:
-	docker compose -f docker-compose.db.yml down --volumes
-db-auth-sync:
-	@pg_dump --schema-only -n auth -f migrations/auth-schema.sql postgres://postgres:password@localhost:5432/postgres
+
+local-up:
+	docker compose -f docker-compose.local.yml up -d
+local-down:
+	docker compose -f docker-compose.local.yml down --volumes
+
 db-migrate:
 	migrate create -ext sql -dir migrations -seq ${name}
 db-sync:
+	cd cmd/auth && \
+	pnpm migrate && \
+	cd ../.. && \
 	migrate -database postgres://postgres:password@localhost:5432/postgres?sslmode=disable -path migrations up
 db-desync:
 	migrate -database postgres://postgres:password@localhost:5432/postgres?sslmode=disable -path migrations down 

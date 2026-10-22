@@ -7,10 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 
-	"github.com/artrctx/templ-core/internal/env"
 	"github.com/lestrrat-go/httprc/v3"
 	"github.com/lestrrat-go/httprc/v3/tracesink"
 	"github.com/lestrrat-go/jwx/v3/jwk"
@@ -21,8 +19,6 @@ type UserKey string
 
 const UserCtxKey UserKey = "templ-user"
 
-var jwksURL string = fmt.Sprintf("%s/api/auth/jwks", env.AuthUrl)
-
 type User struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`
@@ -31,8 +27,9 @@ type User struct {
 }
 
 var (
-	iMu      sync.Mutex
-	JwkCache *jwk.Cache
+	jwkCache *jwk.Cache
+	jwksURL  string
+	BaseURL  string
 )
 
 // errors
@@ -40,13 +37,12 @@ var (
 	ErrMissingUserID = errors.New("missing user id")
 )
 
-func loadCachedKeyset() error {
-	iMu.Lock()
-	defer iMu.Unlock()
-	if JwkCache != nil {
+func Initialize(baseURL string) error {
+	if jwkCache != nil {
 		return nil
 	}
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	c, err := jwk.NewCache(ctx, httprc.NewClient(
 		httprc.WithTraceSink(tracesink.NewSlog(slog.New(slog.NewJSONHandler(os.Stderr, nil)))),
 	))
@@ -55,6 +51,8 @@ func loadCachedKeyset() error {
 		return err
 	}
 
+	BaseURL = baseURL
+	jwksURL = fmt.Sprintf("%s/api/auth/jwks", baseURL)
 	if err := c.Register(ctx, jwksURL); err != nil {
 		return err
 	}
@@ -63,21 +61,16 @@ func loadCachedKeyset() error {
 		return err
 	}
 
-	JwkCache = c
+	jwkCache = c
+
 	return nil
 }
 
 // https://pkg.go.dev/github.com/lestrrat-go/jwx/v3
 func UserFromRequest(r *http.Request) (User, error) {
-	if JwkCache == nil {
-		if err := loadCachedKeyset(); err != nil {
-			return User{}, fmt.Errorf("jwk cache: %w", err)
-		}
-	}
-
 	timedCtx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
-	keyset, err := JwkCache.Lookup(timedCtx, jwksURL)
+	keyset, err := jwkCache.Lookup(timedCtx, jwksURL)
 	if err != nil {
 		return User{}, fmt.Errorf("retrieve jwks: %w", err)
 	}
@@ -121,8 +114,8 @@ func UserFromCtx(ctx context.Context) (*User, error) {
 }
 
 func Close() error {
-	if JwkCache == nil {
+	if jwkCache == nil {
 		return nil
 	}
-	return JwkCache.Shutdown(context.Background())
+	return jwkCache.Shutdown(context.Background())
 }

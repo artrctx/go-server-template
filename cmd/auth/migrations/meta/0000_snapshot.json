@@ -1,5 +1,5 @@
 {
-  "id": "d7bc42dc-f35e-4814-a6f4-a95b51d210f3",
+  "id": "879dc6df-fad3-4d1b-bd8f-bed23361087a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -111,12 +111,8 @@
           "tableFrom": "account",
           "tableTo": "user",
           "schemaTo": "auth",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -158,6 +154,18 @@
         "expires_at": {
           "name": "expires_at",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alg": {
+          "name": "alg",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "crv": {
+          "name": "crv",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }
@@ -253,12 +261,8 @@
           "tableFrom": "session",
           "tableTo": "user",
           "schemaTo": "auth",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -268,9 +272,7 @@
         "session_token_unique": {
           "name": "session_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -338,13 +340,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "is_anonymous": {
-          "name": "is_anonymous",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
         "role": {
           "name": "role",
           "type": "text",
@@ -378,16 +373,12 @@
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         },
         "user_username_unique": {
           "name": "user_username_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
+          "columns": ["username"]
         }
       },
       "policies": {},

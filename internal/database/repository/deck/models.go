@@ -9,7 +9,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -95,67 +96,6 @@ func (ns NullDeckVisibility) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.DeckVisibility), nil
-}
-
-type AuthAccount struct {
-	ID                    string     `json:"id"`
-	AccountId             string     `json:"accountId"`
-	ProviderId            string     `json:"providerId"`
-	UserId                string     `json:"userId"`
-	AccessToken           *string    `json:"accessToken"`
-	RefreshToken          *string    `json:"refreshToken"`
-	IdToken               *string    `json:"idToken"`
-	AccessTokenExpiresAt  *time.Time `json:"accessTokenExpiresAt"`
-	RefreshTokenExpiresAt *time.Time `json:"refreshTokenExpiresAt"`
-	Scope                 *string    `json:"scope"`
-	Password              *string    `json:"password"`
-	CreatedAt             time.Time  `json:"createdAt"`
-	UpdatedAt             time.Time  `json:"updatedAt"`
-}
-
-type AuthJwk struct {
-	ID         string     `json:"id"`
-	PublicKey  string     `json:"publicKey"`
-	PrivateKey string     `json:"privateKey"`
-	CreatedAt  time.Time  `json:"createdAt"`
-	ExpiresAt  *time.Time `json:"expiresAt"`
-}
-
-type AuthSession struct {
-	ID             string    `json:"id"`
-	ExpiresAt      time.Time `json:"expiresAt"`
-	Token          string    `json:"token"`
-	CreatedAt      time.Time `json:"createdAt"`
-	UpdatedAt      time.Time `json:"updatedAt"`
-	IpAddress      *string   `json:"ipAddress"`
-	UserAgent      *string   `json:"userAgent"`
-	UserId         string    `json:"userId"`
-	ImpersonatedBy *string   `json:"impersonatedBy"`
-}
-
-type AuthUser struct {
-	ID              string     `json:"id"`
-	Name            string     `json:"name"`
-	Email           string     `json:"email"`
-	EmailVerified   bool       `json:"emailVerified"`
-	Image           *string    `json:"image"`
-	CreatedAt       time.Time  `json:"createdAt"`
-	UpdatedAt       time.Time  `json:"updatedAt"`
-	Username        *string    `json:"username"`
-	DisplayUsername *string    `json:"displayUsername"`
-	Role            *string    `json:"role"`
-	Banned          *bool      `json:"banned"`
-	BanReason       *string    `json:"banReason"`
-	BanExpires      *time.Time `json:"banExpires"`
-}
-
-type AuthVerification struct {
-	ID         string    `json:"id"`
-	Identifier string    `json:"identifier"`
-	Value      string    `json:"value"`
-	ExpiresAt  time.Time `json:"expiresAt"`
-	CreatedAt  time.Time `json:"createdAt"`
-	UpdatedAt  time.Time `json:"updatedAt"`
 }
 
 type Card struct {

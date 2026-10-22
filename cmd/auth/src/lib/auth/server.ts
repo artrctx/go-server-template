@@ -4,7 +4,6 @@ import {
   jwt,
   username,
   emailOTP,
-  anonymous,
 } from "better-auth/plugins";
 import { ac, admin, moderator, user } from "./permissions.js";
 import { APP_SCHEMA } from "./const.js";
@@ -70,7 +69,6 @@ export const auth = betterAuth({
     jwt(),
     username(),
     expo(),
-    anonymous(),
     adminConfig({
       ac,
       roles: {

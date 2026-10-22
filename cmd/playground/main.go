@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Println("Shuttle playground")
+	fmt.Println("templ playground")
 }

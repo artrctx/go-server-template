@@ -11,7 +11,7 @@ export default defineConfig({
       "postgres://postgres:password@localhost:5432/postgres",
   },
   migrations: {
-    table: "auth-migrations",
+    table: "auth_migrations",
     schema: "public",
   },
 });
